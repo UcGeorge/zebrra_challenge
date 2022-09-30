@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _getNews() async {
     setState(() {
       loading = true;
+      error = null;
     });
     await NewsRepository.getEverything(
       'NO_TOKEN',

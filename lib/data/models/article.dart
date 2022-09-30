@@ -61,7 +61,7 @@ class Article {
       description: map['description'] ?? '',
       url: map['url'] ?? '',
       urlToImage: map['urlToImage'],
-      publishedAt: DateTime.fromMillisecondsSinceEpoch(map['publishedAt']),
+      publishedAt: DateTime.parse(map['publishedAt']),
       content: map['content'] ?? '',
     );
   }
@@ -83,7 +83,7 @@ class Article {
       'description': description,
       'url': url,
       'urlToImage': urlToImage,
-      'publishedAt': publishedAt.millisecondsSinceEpoch,
+      'publishedAt': publishedAt.toIso8601String(),
       'content': content,
     };
   }
