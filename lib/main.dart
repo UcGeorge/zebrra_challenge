@@ -1,8 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:zebrra_challenge/data/models/article.dart';
-import 'package:zebrra_challenge/data/repositories/news/news.dart';
+import 'package:logging/logging.dart';
+import 'data/models/article.dart';
+import 'data/repositories/news/news.dart';
 
-void main() {
+final _log = Logger('main.dart');
+
+//* INFO, WARNING, FATAL, Exception
+
+void main() async {
+  if (kReleaseMode) {
+    // Don't log anything below warnings in production.
+    Logger.root.level = Level.WARNING;
+  }
+  Logger.root.onRecord.listen((record) {
+    // final logFileName =
+    //     'logs/${record.time.hour}-${record.time.minute}-${record.time.day}-${record.time.month}-${record.time.year}.log';
+    final logString = '${record.level.name.padRight(7)} : ${record.time} : '
+        '${record.loggerName} : '
+        '${record.message}';
+    debugPrint(logString);
+    // File(logFileName).writeAsStringSync(logString, mode: FileMode.append);
+  });
   runApp(const MyApp());
 }
 
@@ -29,6 +48,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Article>? articles;
+  String? error;
   bool loading = false;
 
   void _getNews() async {
@@ -38,16 +58,17 @@ class _MyHomePageState extends State<MyHomePage> {
     await NewsRepository.getEverything(
       'NO_TOKEN',
       q: 'Tesla',
-      from: DateTime(2020, 8, 30),
+      from: DateTime(2022, 8, 30),
       sortBy: 'publishedAt',
-      onError: (errorMessage) => showDialog(
-        context: context,
-        builder: (context) => Container(
-          color: const Color(0xffFAFAFA),
-          padding: const EdgeInsets.all(24),
-          child: Text(errorMessage),
-        ),
-      ),
+      onError: (errorMessage) {
+        if (mounted) {
+          setState(() {
+            error = errorMessage;
+          });
+        } else {
+          error = errorMessage;
+        }
+      },
     ).then((value) {
       if (mounted) {
         setState(() {
@@ -72,17 +93,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : ListView.builder(
-              itemCount: articles?.length ?? 0,
-              itemBuilder: (context, i) => ListTile(
-                title: Text(articles![i].title),
-                subtitle: Text(
-                  'By ${articles![i].author}',
-                  overflow: TextOverflow.ellipsis,
+          : error != null
+              ? Center(
+                  child: Text(error!),
+                )
+              : ListView.builder(
+                  itemCount: articles?.length ?? 0,
+                  itemBuilder: (context, i) => ListTile(
+                    title: Text(articles![i].title),
+                    subtitle: Text(
+                      'By ${articles![i].author}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    isThreeLine: true,
+                  ),
                 ),
-                isThreeLine: true,
-              ),
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _getNews,
         tooltip: 'Get news',
