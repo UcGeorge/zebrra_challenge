@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'data/models/article.dart';
-import 'data/repositories/news/news.dart';
+
+import 'view/pages/home_page.dart';
+import 'view/theme.dart';
 
 final _log = Logger('main.dart');
 
@@ -30,90 +31,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Zebrra Challenge',
-      home: MyHomePage(title: 'Zebrra Challenge'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  List<Article>? articles;
-  String? error;
-  bool loading = false;
-
-  void _getNews() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
-    await NewsRepository.getEverything(
-      'NO_TOKEN',
-      q: 'Tesla',
-      from: DateTime(2022, 8, 30),
-      sortBy: 'publishedAt',
-      onError: (errorMessage) {
-        if (mounted) {
-          setState(() {
-            error = errorMessage;
-          });
-        } else {
-          error = errorMessage;
-        }
-      },
-    ).then((value) {
-      if (mounted) {
-        setState(() {
-          articles = value;
-        });
-      } else {
-        articles = value;
-      }
-    });
-    setState(() {
-      loading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : error != null
-              ? Center(
-                  child: Text(error!),
-                )
-              : ListView.builder(
-                  itemCount: articles?.length ?? 0,
-                  itemBuilder: (context, i) => ListTile(
-                    title: Text(articles![i].title),
-                    subtitle: Text(
-                      'By ${articles![i].author}',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    isThreeLine: true,
-                  ),
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getNews,
-        tooltip: 'Get news',
-        child: const Icon(Icons.search),
-      ),
+      themeMode: ThemeMode.system,
+      theme: ThemeClass.lightTheme,
+      darkTheme: ThemeClass.darkTheme,
+      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'News'),
     );
   }
 }
